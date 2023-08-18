@@ -32,6 +32,7 @@ parser.add_argument("--dry-run", action="store_true", help="Don't run any comman
 subparsers = parser.add_subparsers(help="Action to perform", dest="command", required=True)
 build_parser = subparsers.add_parser("build", help="Build the image")
 build_parser.add_argument("--push", help="Also push the images", action="store_true")
+build_parser.add_argument("--load", help="Load the docker image locally", action="store_true")
 manifest_parser = subparsers.add_parser("manifest", help="Create a manifest from already pushed images")
 
 
@@ -87,10 +88,12 @@ def main():
                 sys.exit(1)
 
     # detect channel from tag
-    match = re.match(r'^\d+\.\d+(?:\.\d+)?(b\d+)?$', args.tag)
+    match = re.match(r"^(\d+\.\d+)(?:\.\d+)?(b\d+)?$", args.tag)
+    major_minor_version = None
     if match is None:
         channel = CHANNEL_DEV
-    elif match.group(1) is None:
+    elif match.group(2) is None:
+        major_minor_version = match.group(1)
         channel = CHANNEL_RELEASE
     else:
         channel = CHANNEL_BETA
@@ -104,6 +107,11 @@ def main():
         # Additionally push to beta
         tags_to_push.append("beta")
         tags_to_push.append("latest")
+
+        # Compatibility with HA tags
+        if major_minor_version:
+            tags_to_push.append("stable")
+            tags_to_push.append(major_minor_version)
 
     if args.command == "build":
         # 1. pull cache image
@@ -132,6 +140,8 @@ def main():
             cmd += ["--tag", img]
         if args.push:
             cmd += ["--push", "--cache-to", f"type=registry,ref={cache_img},mode=max"]
+        if args.load:
+            cmd += ["--load"]
 
         run_command(*cmd, ".")
     elif args.command == "manifest":

@@ -7,6 +7,10 @@
 #include "api_server.h"
 #include "api_frame_helper.h"
 
+#ifdef USE_BLUETOOTH_PROXY
+#include "esphome/components/bluetooth_proxy/bluetooth_proxy.h"
+#endif
+
 namespace esphome {
 namespace api {
 
@@ -32,8 +36,8 @@ class APIConnection : public APIServerConnection {
   void cover_command(const CoverCommandRequest &msg) override;
 #endif
 #ifdef USE_FAN
-  bool send_fan_state(fan::FanState *fan);
-  bool send_fan_info(fan::FanState *fan);
+  bool send_fan_state(fan::Fan *fan);
+  bool send_fan_info(fan::Fan *fan);
   void fan_command(const FanCommandRequest &msg) override;
 #endif
 #ifdef USE_LIGHT
@@ -78,12 +82,29 @@ class APIConnection : public APIServerConnection {
   bool send_button_info(button::Button *button);
   void button_command(const ButtonCommandRequest &msg) override;
 #endif
+#ifdef USE_LOCK
+  bool send_lock_state(lock::Lock *a_lock, lock::LockState state);
+  bool send_lock_info(lock::Lock *a_lock);
+  void lock_command(const LockCommandRequest &msg) override;
+#endif
+#ifdef USE_MEDIA_PLAYER
+  bool send_media_player_state(media_player::MediaPlayer *media_player);
+  bool send_media_player_info(media_player::MediaPlayer *media_player);
+  void media_player_command(const MediaPlayerCommandRequest &msg) override;
+#endif
   bool send_log_message(int level, const char *tag, const char *line);
   void send_homeassistant_service_call(const HomeassistantServiceResponse &call) {
     if (!this->service_call_subscription_)
       return;
     this->send_homeassistant_service_response(call);
   }
+#ifdef USE_BLUETOOTH_PROXY
+  bool send_bluetooth_le_advertisement(const BluetoothLEAdvertisementResponse &call) {
+    if (!this->bluetooth_le_advertisement_subscription_)
+      return false;
+    return this->send_bluetooth_le_advertisement_response(call);
+  }
+#endif
 #ifdef USE_HOMEASSISTANT_TIME
   void send_time_request() {
     GetTimeRequest req;
@@ -124,6 +145,9 @@ class APIConnection : public APIServerConnection {
     return {};
   }
   void execute_service(const ExecuteServiceRequest &msg) override;
+  void subscribe_bluetooth_le_advertisements(const SubscribeBluetoothLEAdvertisementsRequest &msg) override {
+    this->bluetooth_le_advertisement_subscription_ = true;
+  }
   bool is_authenticated() override { return this->connection_state_ == ConnectionState::AUTHENTICATED; }
   bool is_connection_setup() override {
     return this->connection_state_ == ConnectionState ::CONNECTED || this->is_authenticated();
@@ -166,6 +190,7 @@ class APIConnection : public APIServerConnection {
   uint32_t last_traffic_;
   bool sent_ping_{false};
   bool service_call_subscription_{false};
+  bool bluetooth_le_advertisement_subscription_{true};
   bool next_close_ = false;
   APIServer *parent_;
   InitialStateIterator initial_state_iterator_;

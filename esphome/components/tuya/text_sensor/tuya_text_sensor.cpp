@@ -14,13 +14,13 @@ void TuyaTextSensor::setup() {
         this->publish_state(datapoint.value_string);
         break;
       case TuyaDatapointType::RAW: {
-        std::string data = hexencode(datapoint.value_raw);
+        std::string data = format_hex_pretty(datapoint.value_raw);
         ESP_LOGD(TAG, "MCU reported text sensor %u is: %s", datapoint.id, data.c_str());
         this->publish_state(data);
         break;
       }
       default:
-        ESP_LOGW(TAG, "Unsupported data type for tuya text sensor %u: %#02hhX", datapoint.id, datapoint.type);
+        ESP_LOGW(TAG, "Unsupported data type for tuya text sensor %u: %#02hhX", datapoint.id, (uint8_t) datapoint.type);
         break;
     }
   });

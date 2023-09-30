@@ -333,7 +333,7 @@ class WaveshareEPaper7P5InV2 : public WaveshareEPaper {
 
   int get_height_internal() override;
 
-  uint32_t idle_timeout_() override;
+  uint32_t idle_timeout_();
 };
 
 class WaveshareEPaper7P5InV2B : public WaveshareEPaper {
@@ -369,7 +369,7 @@ class WaveshareEPaper7P5InV2B : public WaveshareEPaper {
 
   int get_height_internal() override;
 
-  uint32_t idle_timeout_() override;
+  uint32_t idle_timeout_();
 };
 
 }  // namespace waveshare_epaper

@@ -86,7 +86,6 @@ def to_code(config):
     else:
         raise NotImplementedError()
 
-    yield cg.register_component(var, config)
     yield display.register_display(var, config)
     yield spi.register_spi_device(var, config)
 

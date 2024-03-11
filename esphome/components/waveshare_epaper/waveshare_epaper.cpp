@@ -1034,6 +1034,7 @@ void WaveshareEPaper7P5InV2::dump_config() {
   LOG_PIN("  Busy Pin: ", this->busy_pin_);
   LOG_UPDATE_INTERVAL(this);
 }
+bool WaveshareEPaper7P5InV2B::wait_until_idle_() {
   if (this->busy_pin_ == nullptr) {
     return true;
   }
@@ -1049,7 +1050,7 @@ void WaveshareEPaper7P5InV2::dump_config() {
     delay(10);
   }
   return true;
- }
+}
 void WaveshareEPaper7P5InV2B::initialize() {
   // COMMAND POWER SETTING
   this->command(0x01);

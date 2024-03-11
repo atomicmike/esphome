@@ -1043,12 +1043,13 @@ bool WaveshareEPaper7P5InV2B::wait_until_idle_() {
   while (this->busy_pin_->digital_read()) {
     this->command(0x71);
     if (millis() - start > this->idle_timeout_()) {
-      ESP_LOGE(TAG, "Timeout while displaying image!");
+      ESP_LOGI(TAG, "Timeout while displaying image!");
       return false;
     }
     App.feed_wdt();
     delay(10);
   }
+  delay(200);  // NOLINT
   return true;
 }
 void WaveshareEPaper7P5InV2B::initialize() {
